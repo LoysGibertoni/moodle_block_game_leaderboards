@@ -50,7 +50,8 @@ class block_game_leaderboards_edit_form extends block_edit_form {
         $periods = array(
             0 => get_string('configpage_daily', 'block_game_leaderboards'),
             1 => get_string('configpage_weekly', 'block_game_leaderboards'),
-            2 => get_string('configpage_monthly', 'block_game_leaderboards')
+            2 => get_string('configpage_monthly', 'block_game_leaderboards'),
+            3 => get_string('configpage_any', 'block_game_leaderboards')
         );
         $mform->addElement('select', 'config_period', get_string('configpage_period', 'block_game_leaderboards'), $periods, null);
         $mform->addRule('config_period', null, 'required', null, 'client');

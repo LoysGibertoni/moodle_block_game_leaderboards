@@ -59,7 +59,7 @@ class block_game_leaderboards extends block_base {
 	}
 
     public function get_content() {
-        global $USER, $PAGE, $CFG, $DB;
+        global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 
         $this->content = new stdClass();
 
@@ -70,8 +70,11 @@ class block_game_leaderboards extends block_base {
             else if($this->config->period == 1) { // Weekly
                 $startdate = mktime(0, 0, 0, date('m'),  date('d') - intval(date('w')),  date('Y'));
             }
-            else { // Monthly
+            else if($this->config->period == 2) { // Monthly
                 $startdate = mktime(0, 0, 0, date('m'),  1,  date('Y'));
+            }
+            else { // Any
+                $startdate = 0;
             }
 
             if($this->config->groupmode == NOGROUPS) {
@@ -88,7 +91,7 @@ class block_game_leaderboards extends block_base {
             if($this->config->groupmode != VISIBLEGROUPS) { // Show users points
                 foreach($leaderboard_users as $userid => $leaderboard_user) {
                     $info = $DB->get_record('user', array('id' => $userid));
-                    $this->content->text .= '<li>' . $info->firstname . ' ' . $info->lastname . ': ' . $leaderboard_user . ' ' . get_string('configpage_points', 'block_game_leaderboards');
+                    $this->content->text .= '<li>' . $OUTPUT->user_picture($info, array('size' => 24, 'alttext' => false)) . ' ' . $info->firstname . ' ' . $info->lastname . ': ' . $leaderboard_user . ' ' . get_string('configpage_points', 'block_game_leaderboards');
 
                     if($this->config->groupmode == SEPARATEGROUPS) {
                         $groups = groups_get_all_groups($this->page->course->id, $userid, isset($this->config->groupingid) ? $this->config->groupingid : 0);

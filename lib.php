@@ -27,7 +27,6 @@ function get_user_leaderboard($blockinstanceid, $courseid, $startdate, $enddate,
 
     if($groupingid) {
         $userids = array_keys(groups_get_grouping_members($groupingid));
-        print_object($userids);
     }
     else {
         if($courseid == SITEID) {

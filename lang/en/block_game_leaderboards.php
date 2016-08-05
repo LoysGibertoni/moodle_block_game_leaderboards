@@ -35,4 +35,5 @@ $string['configpage_period'] = 'Período';
 $string['configpage_daily'] = 'Diário';
 $string['configpage_weekly'] = 'Mensal';
 $string['configpage_monthly'] = 'Semanal';
+$string['configpage_any'] = 'Qualquer';
 $string['configpage_points'] = 'pontos';
