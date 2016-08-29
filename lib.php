@@ -22,6 +22,112 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once($CFG->libdir . "/badgeslib.php");
+
+function get_leaderboard($blockinstanceid, $courseid, $startdate, $enddate, $searchuserid = 0, $limit = 0) {
+	global $DB, $OUTPUT, $PAGE;
+
+	$block_info = $DB->get_record('block_instances', array('id' => $blockinstanceid));
+	$block_instance = block_instance('game_leaderboards', $block_info);
+
+	if($block_instance->config->groupmode == NOGROUPS) {
+		$leaderboard_users = get_user_leaderboard($block_instance->config->blockinstanceid, $courseid, $startdate, $enddate);
+	}
+	else if($block_instance->config->groupmode == SEPARATEGROUPS) {
+		$leaderboard_users = get_user_leaderboard($block_instance->config->blockinstanceid, $courseid, $startdate, $enddate, isset($block_instance->config->groupingid) ? $block_instance->config->groupingid : 0);
+	}
+	else {
+		$leaderboard_groups = get_group_leaderboard($block_instance->config->blockinstanceid, $courseid, $startdate, $enddate, isset($block_instance->config->groupingid) ? $block_instance->config->groupingid : 0);
+	}
+
+	$leaderboard_contents = array();
+	$found_userid = null;
+	if($block_instance->config->groupmode != VISIBLEGROUPS) { // Show users points
+
+		foreach($leaderboard_users as $userid => $leaderboard_user) {
+			$info = $DB->get_record('user', array('id' => $userid));
+			$text = '<li>' . $OUTPUT->user_picture($info, array('size' => 24, 'alttext' => false)) . ' ' . $info->firstname . ' ' . $info->lastname . ': ' . $leaderboard_user . ' ' . get_string('configpage_points', 'block_game_leaderboards');
+
+			// Print user badges
+			/*if ($courseid == SITEID) {
+				$badges_courseid = null;
+			}
+			else {
+				$badges_courseid = $courseid;
+			}
+
+			$output = $PAGE->get_renderer('core', 'badges');
+			if ($user_badges = badges_get_user_badges($userid, $courseid, 0, 2)) {
+				$text .= $output->print_badges_list($user_badges, $userid, true);
+			}*/
+
+			// List user groups if groupmode is separate groups
+			if($block_instance->config->groupmode == SEPARATEGROUPS) {
+				$groups = groups_get_all_groups($courseid, $userid, isset($block_instance->config->groupingid) ? $block_instance->config->groupingid : 0);
+				$group_names = array();
+				foreach ($groups as $group) {
+					$group_names[] = $group->name;
+				}
+				sort($group_names);
+
+				$text .= ' (' . implode(', ', $group_names) . ')';
+			}
+
+			$text .= '</li>';
+			if($searchuserid == $userid) {
+				$text = '<b>' . $text . '</b>';
+				$found_userid = count($leaderboard_contents);
+			}
+
+			$leaderboard_contents[] = $text;
+		}
+	}
+	else { // Show groups points
+		foreach($leaderboard_groups as $groupid => $leaderboard_group) {
+			$text = '<li>' . groups_get_group_name($groupid) . ': ' . $leaderboard_group . ' ' . get_string('configpage_points', 'block_game_leaderboards') . '</li>';
+			
+			if(groups_is_member($groupid, $searchuserid)) {
+				$text = '<b>' . $text . '</b>';
+				if(is_null($found_userid)) {
+					$found_userid = count($leaderboard_contents);
+				}
+			}
+
+			$leaderboard_contents[] = $text;
+		}
+	}
+
+	$leaderboard_size = count($leaderboard_contents);
+	$begin = 0;
+	if($limit) {
+		if(is_null($found_userid)) {
+			$found_userid = 0;
+		}
+		
+		$begin = $found_userid - $limit;
+		$end = $found_userid + $limit;
+		if($begin < 0) {
+			$end += -$begin;
+			$begin = 0;
+			if($end >= $leaderboard_size) {
+				$end = $leaderboard_size - 1;
+			}
+		}
+		if($end >= $leaderboard_size) {
+			$begin -= $end - $leaderboard_size + 1;
+			$end = $leaderboard_size - 1;
+			if($begin < 0) {
+				$begin = 0;
+			}
+		}
+		$leaderboard_contents = array_splice($leaderboard_contents, $begin, $end - $begin + 1);
+	}
+
+	$content = '<ol start="' . ($begin + 1) . '">' . implode($leaderboard_contents) . '</ol>';
+
+	return $content;
+}
+
 function get_user_leaderboard($blockinstanceid, $courseid, $startdate, $enddate, $groupingid = 0, $limit = 0) {
     global $DB;
 

@@ -30,6 +30,7 @@ $string['title'] = 'Ranking';
 
 $string['configpage_header'] = 'Configurações do ranking';
 $string['configpage_title'] = 'Título';
+$string['configpage_size'] = 'Tamanho do ranking';
 $string['configpage_block'] = 'Bloco';
 $string['configpage_period'] = 'Período';
 $string['configpage_daily'] = 'Diário';
@@ -37,3 +38,7 @@ $string['configpage_weekly'] = 'Mensal';
 $string['configpage_monthly'] = 'Semanal';
 $string['configpage_any'] = 'Qualquer';
 $string['configpage_points'] = 'pontos';
+
+$string['block_seeall'] = 'Ver tudo';
+
+$string['leaderboard_header'] = 'Ranking';

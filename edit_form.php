@@ -31,6 +31,14 @@ class block_game_leaderboards_edit_form extends block_edit_form {
         $mform->addElement('text', 'config_title', get_string('configpage_title', 'block_game_leaderboards'));
 		$mform->setType('config_title', PARAM_TEXT);
 
+        $limits = array();
+        for($i = 1; $i <= 5; $i++) {
+            $limits[$i] = 2 * $i + 1;
+        }
+        $mform->addElement('select', 'config_size', get_string('configpage_size', 'block_game_leaderboards'), $limits, null);
+        $mform->addRule('config_size', null, 'required', null, 'client');
+        $mform->setType('config_size', PARAM_INT);
+
         $game_points_installed = $DB->record_exists('block', array('name' => 'game_points'));
         if($game_points_installed) {
             $game_points_blocks = array();

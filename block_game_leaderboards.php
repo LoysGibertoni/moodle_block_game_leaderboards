@@ -77,42 +77,10 @@ class block_game_leaderboards extends block_base {
                 $startdate = 0;
             }
 
-            if($this->config->groupmode == NOGROUPS) {
-                $leaderboard_users = get_user_leaderboard($this->config->blockinstanceid, $this->page->course->id, $startdate, time());
-            }
-            else if($this->config->groupmode == SEPARATEGROUPS) {
-                $leaderboard_users = get_user_leaderboard($this->config->blockinstanceid, $this->page->course->id, $startdate, time(), isset($this->config->groupingid) ? $this->config->groupingid : 0);
-            }
-            else {
-                $leaderboard_groups = get_group_leaderboard($this->config->blockinstanceid, $this->page->course->id, $startdate, time(), isset($this->config->groupingid) ? $this->config->groupingid : 0);
-            }
+            $this->content->text = get_leaderboard($this->instance->id, $this->page->course->id, $startdate, time(), $USER->id, $this->config->size);
 
-            $this->content->text = '<ol>';
-            if($this->config->groupmode != VISIBLEGROUPS) { // Show users points
-                foreach($leaderboard_users as $userid => $leaderboard_user) {
-                    $info = $DB->get_record('user', array('id' => $userid));
-                    $this->content->text .= '<li>' . $OUTPUT->user_picture($info, array('size' => 24, 'alttext' => false)) . ' ' . $info->firstname . ' ' . $info->lastname . ': ' . $leaderboard_user . ' ' . get_string('configpage_points', 'block_game_leaderboards');
-
-                    if($this->config->groupmode == SEPARATEGROUPS) {
-                        $groups = groups_get_all_groups($this->page->course->id, $userid, isset($this->config->groupingid) ? $this->config->groupingid : 0);
-                        $group_names = array();
-                        foreach ($groups as $group) {
-                            $group_names[] = $group->name;
-                        }
-                        sort($group_names);
-
-                        $this->content->text .= ' (' . implode(', ', $group_names) . ')';
-                    }
-
-                    $this->content->text .= '</li>';
-                }
-            }
-            else { // Show groups points
-                foreach($leaderboard_groups as $groupid => $leaderboard_group) {
-                    $this->content->text .= '<li>' . groups_get_group_name($groupid) . ': ' . $leaderboard_group . ' ' . get_string('configpage_points', 'block_game_leaderboards') . '</li>';
-                }
-            }
-            $this->content->text .= '</ol>';
+            $leaderboard_url = new moodle_url('/blocks/game_leaderboards/leaderboard.php', array('courseid' => $this->page->course->id, 'blockinstanceid' => $this->instance->id, 'startdate' => $startdate, 'enddate' => time()));
+            $this->content->text .= html_writer::link($leaderboard_url, get_string('block_seeall', 'block_game_leaderboards'));
         }
 
         return $this->content;
