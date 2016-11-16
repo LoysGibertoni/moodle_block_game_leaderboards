@@ -31,7 +31,8 @@ function get_leaderboard($blockinstanceid, $courseid, $startdate, $enddate, $sea
 	$block_instance = block_instance('game_leaderboards', $block_info);
 
 	if($block_instance->config->groupmode == NOGROUPS) {
-		$leaderboard_users = get_user_leaderboard($block_instance->config->blockinstanceid, $courseid, $startdate, $enddate);
+		$conditions = $DB->get_field('leaderboard_condition', 'conditions', array('blockinstanceid' => $blockinstanceid));
+		$leaderboard_users = get_user_leaderboard($block_instance->config->blockinstanceid, $courseid, $startdate, $enddate, 0, 0, $conditions);
 	}
 	else if($block_instance->config->groupmode == SEPARATEGROUPS) {
 		$leaderboard_users = get_user_leaderboard($block_instance->config->blockinstanceid, $courseid, $startdate, $enddate, isset($block_instance->config->groupingid) ? $block_instance->config->groupingid : 0);
@@ -128,7 +129,7 @@ function get_leaderboard($blockinstanceid, $courseid, $startdate, $enddate, $sea
 	return $content;
 }
 
-function get_user_leaderboard($blockinstanceid, $courseid, $startdate, $enddate, $groupingid = 0, $limit = 0) {
+function get_user_leaderboard($blockinstanceid, $courseid, $startdate, $enddate, $groupingid = 0, $limit = 0, $conditions = false) {
     global $DB;
 
     if($groupingid) {
@@ -157,7 +158,9 @@ function get_user_leaderboard($blockinstanceid, $courseid, $startdate, $enddate,
 
     $leaderboard = array();
     foreach($userids as $userid) {
-        $leaderboard[$userid] = get_period_points($blockinstanceid, $userid, $startdate, $enddate);
+		//if(leaderboards_satisfies_conditions($conditions, $courseid, $userid)) {
+        	$leaderboard[$userid] = get_period_points($blockinstanceid, $userid, $startdate, $enddate);
+		//}
     }
     arsort($leaderboard);
  
@@ -277,4 +280,55 @@ function get_period_group_points($blockid, $groupid, $startdate, $enddate)
 	}
 	
 	return $points;
+}
+
+function leaderboards_satisfies_conditions($conditions, $courseid, $userid)
+{
+	global $DB;
+
+	if($conditions)
+	{
+		$tree = new \core_availability\tree(json_decode($conditions));
+		$course = $DB->get_record('course', array('id' => $courseid));
+		$info = new leaderboards_conditions_info($course);
+		$result = $tree->check_available(false, $info, true, $userid);
+		return $result->is_available();
+	}
+	
+	return true;
+}
+
+class leaderboards_conditions_info extends \core_availability\info
+{
+    public function __construct($course = null)
+	{
+        global $SITE;
+        if (!$course) {
+            $course = $SITE;
+        }
+        parent::__construct($course, true, null);
+    }
+
+    protected function get_thing_name()
+	{
+        return 'Conditions';
+    }
+
+    public function get_context()
+	{
+        return \context_course::instance($this->get_course()->id);
+    }
+
+    protected function get_view_hidden_capability()
+	{
+        return 'moodle/course:viewhiddensections';
+    }
+
+    protected function set_in_database($availability)
+	{
+    }
+	
+	public function get_modinfo() {
+        return get_fast_modinfo($this->course);
+    }
 }

@@ -62,8 +62,12 @@ class block_game_leaderboards extends block_base {
         global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 
         $this->content = new stdClass();
+        $this->content->text = '';
+        $this->content->footer = '';
 
-        if(isset($this->config->blockinstanceid)) {
+        $conditions = $DB->get_field('leaderboard_condition', 'conditions', array('blockinstanceid' => $this->instance->id));
+
+        if(isset($this->config->blockinstanceid) && (leaderboards_satisfies_conditions($conditions, $this->page->course->id, $USER->id) || !user_has_role_assignment($USER->id, 5))) {
             if($this->config->period == 0) { // Daily
                 $startdate = mktime(0, 0, 0, date('m'),  date('d'),  date('Y'));
             }

@@ -38,6 +38,7 @@ $string['configpage_weekly'] = 'Mensal';
 $string['configpage_monthly'] = 'Semanal';
 $string['configpage_any'] = 'Qualquer';
 $string['configpage_points'] = 'pontos';
+$string['configpage_conditionmanage'] = 'Gerenciar condições';
 
 $string['block_seeall'] = 'Ver tudo';
 

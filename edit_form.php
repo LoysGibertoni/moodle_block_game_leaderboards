@@ -84,5 +84,9 @@ class block_game_leaderboards_edit_form extends block_edit_form {
 		$mform->addElement('select', 'config_groupingid', get_string('grouping', 'group'), $options);
 		$mform->addHelpButton('config_groupingid', 'grouping', 'group');
         $mform->disabledIf('config_groupingid', 'config_groupmode', 'eq', NOGROUPS);
+
+        // Restrict access link
+        $conditions_url = new moodle_url('/blocks/game_leaderboards/conditionmanage.php', array('courseid' => $COURSE->id, 'blockinstanceid' => $this->block->instance->id));
+        $mform->addElement('static', 'conditions_link', get_string('restrictaccess', 'availability'), html_writer::link($conditions_url, get_string('configpage_conditionmanage', 'block_game_leaderboards')));
     }
 }
